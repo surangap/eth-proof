@@ -1,6 +1,8 @@
-const { GetAndVerify } = require('./../index')
+const { GetAndVerify, GetProof, VerifyProof } = require('./../index')
 const getAndVerify = new GetAndVerify(process.env.ETHPROOFENDPOINT)
+const getProof = new GetProof(process.env.ETHPROOFENDPOINT)
 const { encode, toHex } = require('eth-util-lite')
+const {expect} = require("chai");
 
 describe('Receipt GetAndVerify Against BlockHash', () => {
 
@@ -143,4 +145,15 @@ describe('Receipt GetAndVerify Against BlockHash', () => {
     let receipt   = await getAndVerify.receiptAgainstBlockHash(txHash, blockHash)
     // console.log(prf)
   });
+
+    it('receipt root hash matches for 0x4ab2854ac907fb65693b99cb15169383a56cc88a17365899edad71e84eae8604', async () => {
+      let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+      let txHash    = '0x4ab2854ac907fb65693b99cb15169383a56cc88a17365899edad71e84eae8604'
+      let receiptProof   = await getProof.receiptProof(txHash);
+      let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+      let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+      let trustedReceiptRootHash = block.receiptsRoot;
+
+      expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+    });
 });
