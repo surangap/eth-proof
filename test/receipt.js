@@ -146,14 +146,36 @@ describe('Receipt GetAndVerify Against BlockHash', () => {
     // console.log(prf)
   });
 
-    it('receipt root hash matches for 0x4ab2854ac907fb65693b99cb15169383a56cc88a17365899edad71e84eae8604', async () => {
-      let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
-      let txHash    = '0x4ab2854ac907fb65693b99cb15169383a56cc88a17365899edad71e84eae8604'
-      let receiptProof   = await getProof.receiptProof(txHash);
-      let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
-      let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
-      let trustedReceiptRootHash = block.receiptsRoot;
+  it('should match receipt root hash for transaction type 2', async () => {
+    let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+    let txHash    = '0x4ab2854ac907fb65693b99cb15169383a56cc88a17365899edad71e84eae8604'
+    let receiptProof   = await getProof.receiptProof(txHash);
+    let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+    let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+    let trustedReceiptRootHash = block.receiptsRoot;
 
-      expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
-    });
+    expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+  });
+
+  it('should match receipt root hash for transaction type 1', async () => {
+    let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+    let txHash    = '0x8ab6f33e5860a351db78a7c17b1af98d42491d9b4a0e44c728d08df77396c4f6'
+    let receiptProof   = await getProof.receiptProof(txHash);
+    let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+    let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+    let trustedReceiptRootHash = block.receiptsRoot;
+
+    expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+  });
+
+  it('should match receipt root hash for transaction type 0', async () => {
+    let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+    let txHash    = '0xabf652228844d9d4bc07373448b4ad14e4b930881a3cdaf77789e07831db4506'
+    let receiptProof   = await getProof.receiptProof(txHash);
+    let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+    let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+    let trustedReceiptRootHash = block.receiptsRoot;
+
+    expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+  });
 });
