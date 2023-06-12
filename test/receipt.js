@@ -1,7 +1,7 @@
 const { GetAndVerify, GetProof, VerifyProof } = require('./../index')
 const getAndVerify = new GetAndVerify(process.env.ETHPROOFENDPOINT)
 const getProof = new GetProof(process.env.ETHPROOFENDPOINT)
-const { encode, toHex } = require('eth-util-lite')
+const { encode, toHex, toBuffer} = require('eth-util-lite')
 const {expect} = require("chai");
 
 describe('Receipt GetAndVerify Against BlockHash', () => {
@@ -177,5 +177,65 @@ describe('Receipt GetAndVerify Against BlockHash', () => {
     let trustedReceiptRootHash = block.receiptsRoot;
 
     expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+  });
+
+  it('should be able to decode extracted receipt for transaction type 2', async () => {
+    let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+    let txHash    = '0x8ab6f33e5860a351db78a7c17b1af98d42491d9b4a0e44c728d08df77396c4f6'
+    let receiptProof   = await getProof.receiptProof(txHash);
+    let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+    let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+    let trustedReceiptRootHash = block.receiptsRoot;
+
+    expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+
+    let receiptRPC = await getProof.rpc.eth_getTransactionReceipt(txHash);
+    let extractedReceipt = await VerifyProof.getReceiptFromReceiptProofAt(receiptProof.receiptProof, receiptRPC.transactionIndex);
+
+    // extracted receipt is [status, cumulativeGasUsed, logsBloom, logs]
+    expect(extractedReceipt[0].toString('hex')).to.equal(toBuffer(receiptRPC.status).toString('hex'));
+    expect(extractedReceipt[1].toString('hex')).to.equal(toBuffer(receiptRPC.cumulativeGasUsed).toString('hex'));
+    expect(extractedReceipt[2].toString('hex')).to.equal(toBuffer(receiptRPC.logsBloom).toString('hex'));
+    expect(extractedReceipt[3].length).to.equal(receiptRPC.logs.length);
+  });
+
+  it('should be able to decode extracted receipt for transaction type 1', async () => {
+    let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+    let txHash    = '0x8ab6f33e5860a351db78a7c17b1af98d42491d9b4a0e44c728d08df77396c4f6'
+    let receiptProof   = await getProof.receiptProof(txHash);
+    let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+    let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+    let trustedReceiptRootHash = block.receiptsRoot;
+
+    expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+
+    let receiptRPC = await getProof.rpc.eth_getTransactionReceipt(txHash);
+    let extractedReceipt = await VerifyProof.getReceiptFromReceiptProofAt(receiptProof.receiptProof, receiptRPC.transactionIndex);
+
+    // extracted receipt is [status, cumulativeGasUsed, logsBloom, logs]
+    expect(extractedReceipt[0].toString('hex')).to.equal(toBuffer(receiptRPC.status).toString('hex'));
+    expect(extractedReceipt[1].toString('hex')).to.equal(toBuffer(receiptRPC.cumulativeGasUsed).toString('hex'));
+    expect(extractedReceipt[2].toString('hex')).to.equal(toBuffer(receiptRPC.logsBloom).toString('hex'));
+    expect(extractedReceipt[3].length).to.equal(receiptRPC.logs.length);
+  });
+
+  it('should be able to decode extracted receipt for transaction type 0', async () => {
+    let blockHash = '0x13c27fa68576846b4731c2d1c260e4f1d66966228fab1cb062f165f0f699c5ca'
+    let txHash    = '0xabf652228844d9d4bc07373448b4ad14e4b930881a3cdaf77789e07831db4506'
+    let receiptProof   = await getProof.receiptProof(txHash);
+    let derivedReceiptRootHash = await VerifyProof.getRootFromProof(receiptProof.receiptProof)
+    let block = await getProof.rpc.eth_getBlockByHash(blockHash, false);
+    let trustedReceiptRootHash = block.receiptsRoot;
+
+    expect(derivedReceiptRootHash.toString('hex')).to.equal(trustedReceiptRootHash.slice(2));
+
+    let receiptRPC = await getProof.rpc.eth_getTransactionReceipt(txHash);
+    let extractedReceipt = await VerifyProof.getReceiptFromReceiptProofAt(receiptProof.receiptProof, receiptRPC.transactionIndex);
+
+    // extracted receipt is [status, cumulativeGasUsed, logsBloom, logs]
+    expect(extractedReceipt[0].toString('hex')).to.equal(toBuffer(receiptRPC.status).toString('hex'));
+    expect(extractedReceipt[1].toString('hex')).to.equal(toBuffer(receiptRPC.cumulativeGasUsed).toString('hex'));
+    expect(extractedReceipt[2].toString('hex')).to.equal(toBuffer(receiptRPC.logsBloom).toString('hex'));
+    expect(extractedReceipt[3].length).to.equal(receiptRPC.logs.length);
   });
 });
