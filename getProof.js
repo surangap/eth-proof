@@ -1,4 +1,4 @@
-const { encode } = require('eth-util-lite')
+const { encode, toBuffer } = require('eth-util-lite')
 const { promisfy } = require('promisfy')
 
 const Tree = require('merkle-patricia-tree')
@@ -51,6 +51,10 @@ module.exports = class GetProof{
     await Promise.all(receipts.map((siblingReceipt, index) => {
       let siblingPath = encode(index)
       let serializedReceipt = Receipt.fromRpc(siblingReceipt).serialize()
+      // Add typed transactions for newer tx versions -> https://eips.ethereum.org/EIPS/eip-2718
+      if (siblingReceipt.type !== '0x0') {
+        serializedReceipt = Buffer.concat([toBuffer(siblingReceipt.type), serializedReceipt])
+      }
       return promisfy(tree.put, tree)(siblingPath, serializedReceipt)
     }))
 

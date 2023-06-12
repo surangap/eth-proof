@@ -11,6 +11,9 @@ const RECEIPTS_ROOT_INDEX = 5 // within header
 const STORAGE_ROOT_INDEX  = 2 // within account
 const SET_OF_LOGS_INDEX   = 3 // within receipt
 
+const DynamicFeeTxType = 2 // https://eips.ethereum.org/EIPS/eip-1559
+const AccessListTxType = 1 // https://eips.ethereum.org/EIPS/eip-2930
+
 class Verify{
 
   static chainContainsBlockHash(_chain, _blockHash){ throw new Error("Feature not yet available") }
@@ -57,6 +60,10 @@ class Verify{
   }
   static async getReceiptFromReceiptProofAt(proof, indexOfTx){
     let receiptBuffer = await this.proofContainsValueAt(proof, encode(indexOfTx))
+    // remove the transaction type from the buffer if required
+    if(receiptBuffer[0] === DynamicFeeTxType || receiptBuffer[0] === AccessListTxType){
+        receiptBuffer = receiptBuffer.slice(1)
+    }
     return Receipt.fromBuffer(receiptBuffer)
   }
 
